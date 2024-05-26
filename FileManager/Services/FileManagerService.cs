@@ -1,6 +1,4 @@
 ﻿using FileManager.Models;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace FileManager.Services
 {
@@ -18,10 +16,16 @@ namespace FileManager.Services
 
         public void DeleteFile(string fileId)
         {
-            string filePath = GetFilePath(fileId);
-            if (File.Exists(filePath))
+            try
             {
-                File.Delete(filePath);
+                string filePath = GetFilePath(fileId);
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+            } catch (Exception ex)
+            {
+                throw new FileManagerException(500, ex.Message);
             }
         }
 
@@ -35,27 +39,32 @@ namespace FileManager.Services
             }
             else
             {
-                throw new FileNotFoundException($"File with ID '{fileId}' not found.");
+                throw new FileManagerException(404, "فایل مورد نظر یافت نشد");
             }
         }
 
         public string SaveFile(byte[] data, string name, string dataType)
         {
-            var currentTime = DateTime.Now;
-            string fileId = GenerateFileId(name, dataType, currentTime);
-            string filePath = GetFilePath(fileId);
-
-            FileModel fileModel = new()
+            try
             {
-                Name = name,
-                FileExtension = dataType,
-                CreationDate = currentTime,
-                Data = data
-            };
+                var currentTime = DateTime.Now;
+                string fileId = GenerateFileId(name, dataType, currentTime);
 
-            WriteFileModel(filePath, fileModel);
+                FileModel fileModel = new()
+                {
+                    Name = name,
+                    FileExtension = dataType,
+                    CreationDate = currentTime,
+                    Data = data
+                };
 
-            return fileId;
+                WriteFileModel(fileModel);
+
+                return fileId;
+            } catch (Exception ex)
+            {
+                throw new FileManagerException(500, ex.Message);
+            }
         }
 
         private string GenerateFileId(string name, string dataType, DateTime currentTime)
@@ -70,10 +79,10 @@ namespace FileManager.Services
             return Path.Combine(_storageDirectory, fileId);
         }
 
-        private void WriteFileModel(string filePath, FileModel fileModel)
+        private void WriteFileModel(FileModel fileModel)
         {
             string fileName = $"{fileModel.Name}_{fileModel.CreationDate:yyyyMMddHHmmssffff}_{fileModel.FileExtension}";
-            string fullFilePath = Path.Combine(_storageDirectory, fileName);
+            string fullFilePath = GetFilePath(fileName);
             File.WriteAllBytes(fullFilePath, fileModel.Data);
         }
 
@@ -91,7 +100,5 @@ namespace FileManager.Services
                 Data = fileData
             };
         }
-
-
     }
 }
