@@ -1,13 +1,17 @@
+using Infrastructure.DataAccess.MySql;
+using Infrastructure.DataAccess.Redis;
+using Infrastructure.Services.AuthService;
+using Infrastructure.Services.BoziService;
+using Infrastructure.Services.SmsService;
+using Infrastructure.Services.SmsService.Model;
+using Infrastructure.Services.SmsService.SmsServiceImplementation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SharedModel.BoziService;
+using SixLaborsCaptcha.Mvc.Core;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-
-var connectionString = "Server=localhost;Port=3306;Database=test;Uid=root;Pwd=1221;";
-
 
 
 //Jwt configuration starts here
@@ -32,6 +36,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
  });
 //Jwt configuration ends here
 
+// configure my sql db
+ConfigureMySql();
+
+ConfigureRedis();
+
+ConfigureSms();
+
+builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddSingleton<IBoziService, BoziService>();
+
+builder.Services.AddSixLabCaptcha(x =>
+{
+    x.DrawLines = 1;
+    x.NoiseRate = 0;
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -48,8 +68,42 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+
+
+void ConfigureMySql()
+{
+    var connectionString = builder.Configuration.GetSection("MySql:ConnectionString").Value;
+    if (connectionString != null)
+    {
+        var mySql = new MySqlDataContext(connectionString);
+        builder.Services.AddSingleton(mySql);
+    }
+}
+
+void ConfigureRedis()
+{
+    var connectionString = builder.Configuration.GetSection("Redis:ConnectionString").Value;
+    if (connectionString != null)
+    {
+        var redis = new RedisDataContext(connectionString);
+        builder.Services.AddSingleton(redis);
+    }
+}
+
+void ConfigureSms()
+{
+    var lineNumber = long.Parse(builder.Configuration.GetSection("SmsProvider:SmsIR:lineNumber").Value ?? "0");
+    var token = builder.Configuration.GetSection("SmsProvider:SmsIR:token").Value;
+    var sendApiUrl = builder.Configuration.GetSection("SmsProvider:SmsIR:sendApi").Value;
+    var smsImplementation = new SmsIRImplementation(sendApiUrl, lineNumber, token);
+
+    builder.Services.AddSingleton<ISmsService>(smsImplementation);
+
+    builder.Services.AddScoped<TemplateService>();
+}

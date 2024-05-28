@@ -8,7 +8,7 @@ namespace Infrastructure.DataAccess.MySql.MySqlModels
 {
     public class MySqlCustomer
     {
-        public int CustomerID { get; set; }
+        public string? CustomerID { get; set; }
         public string? MobileNumber { get; set; }
         public string? Email { get; set; }
         public string? FirstName { get; set; }

@@ -12,9 +12,9 @@ namespace Infrastructure.DataAccess.Redis
     {
         private readonly IDatabase _redisCache;
 
-        public RedisDataContext()
+        public RedisDataContext(string connectionString)
         {
-            var configuration = ConfigurationOptions.Parse("localhost:6379");
+            var configuration = ConfigurationOptions.Parse(connectionString);
             var redisConnection = ConnectionMultiplexer.Connect(configuration);
 
             _redisCache = redisConnection.GetDatabase();

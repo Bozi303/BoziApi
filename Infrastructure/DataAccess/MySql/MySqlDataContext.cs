@@ -8,7 +8,8 @@ namespace Infrastructure.DataAccess.MySql
 
         public MySqlDataContext(string connectionString)
         {
-            var connection = new MySqlConnection(connectionString);   
+            var connection = new MySqlConnection(connectionString);  
+            connection.Open();
             _customerRepository = new CustomerRepository(connection);
         }
 

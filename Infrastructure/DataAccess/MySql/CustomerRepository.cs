@@ -17,7 +17,7 @@ namespace Infrastructure.DataAccess.MySql
             _connection = connection;
         }
 
-        public MySqlCustomer? GetCustomerByMobileNumberAsync(string mobileNumber)
+        public MySqlCustomer? GetCustomerByMobileNumber(string mobileNumber)
         {
             MySqlCustomer? customer = null;
 
@@ -35,7 +35,7 @@ namespace Infrastructure.DataAccess.MySql
                         {
                             customer = new MySqlCustomer
                             {
-                                CustomerID = reader.GetInt32("customerID"),
+                                CustomerID = reader.GetInt32("customerID").ToString(),
                                 MobileNumber = reader.GetString("mobileNumber"),
                                 Email = reader.GetString("email"),
                                 FirstName = reader.GetString("firstname"),
@@ -57,6 +57,49 @@ namespace Infrastructure.DataAccess.MySql
                 }
             }
                 
+            return customer;
+        }
+        
+        public MySqlCustomer? GetCustomerById (string customerId)
+        {
+            MySqlCustomer? customer = null;
+
+            string query = "SELECT * FROM customer WHERE customerID = @customerId";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@customerId", customerId);
+
+                try
+                {
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            customer = new MySqlCustomer
+                            {
+                                CustomerID = reader.GetInt32("customerID").ToString(),
+                                MobileNumber = reader.GetString("mobileNumber"),
+                                Email = reader.GetString("email"),
+                                FirstName = reader.GetString("firstname"),
+                                LastName = reader.GetString("lastname"),
+                                LastAccess = reader.GetDateTime("lastaccess"),
+                                RegisterTime = reader.GetDateTime("registerTime"),
+                                CSID = reader.GetInt32("CSID"),
+                                CityID = reader.GetInt32("CityID")
+                            };
+                        }
+                    }
+                }
+
+
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error retrieving customer by customerId.", ex);
+                }
+            }
+
             return customer;
         }
     }
