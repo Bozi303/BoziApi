@@ -1,4 +1,5 @@
 ﻿using ClietnApi.Controllers.PresentationModel;
+using Infrastructure.Model;
 using Infrastructure.Services.AuthService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -78,22 +79,32 @@ namespace ClietnApi.Controllers
             }
         }
 
-        [HttpGet]
-        [Authorize]
-        public ActionResult<CustomerProfile> GetProfile()
+        [HttpPost]
+        public ActionResult RegisterCustomer(RegisterCustomerRequest req)
         {
             try
             {
-                var customerId = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+                var customer = new CreateCustomerRequest
+                {
+                    CityId = req.CityId,
+                    CustomerStatus = (int)CustomerStateEnum.Complete,
+                    Email = req.Email,
+                    FirstName = req.FirstName,
+                    LastName = req.LastName,
+                    LastAccess = DateTime.Now,
+                    MobileNumber = req.MobileNumber,
+                    RegisterationDate = DateTime.Now
+                };
 
-                var customer = _boziService.CustomerService.GetCustomerProfile(customerId);
+                _boziService.CustomerService.CreateCustomer(customer);
 
-                return customer;
-
-            } catch (BoziException ex)
+                return NoContent();
+            }
+            catch (BoziException ex)
             {
                 return StatusCode(ex.ErrorCode, ex.Message);
             }
+
         }
     }
 }

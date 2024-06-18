@@ -1,5 +1,7 @@
 ﻿using Infrastructure.DataAccess.MySql.MySqlModels;
+using Infrastructure.Model;
 using MySql.Data.MySqlClient;
+using SharedModel.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,8 +50,6 @@ namespace Infrastructure.DataAccess.MySql
                         }
                     }
                 }
-
-
                 catch (MySqlException ex)
                 {
                     // Handle database-related exceptions here
@@ -101,6 +101,88 @@ namespace Infrastructure.DataAccess.MySql
             }
 
             return customer;
+        }
+
+        public int CreateCustomer(CreateCustomerRequest customer)
+        {
+            string query = @"
+        INSERT INTO customer (mobileNumber, email, firstname, lastname, lastaccess, registerTime, CSID, CityID)
+        VALUES (@mobileNumber, @email, @firstname, @lastname, @lastaccess, @registerTime, @CSID, @CityID)";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@mobileNumber", customer.MobileNumber);
+                command.Parameters.AddWithValue("@email", customer.Email);
+                command.Parameters.AddWithValue("@firstname", customer.FirstName);
+                command.Parameters.AddWithValue("@lastname", customer.LastName);
+                command.Parameters.AddWithValue("@lastaccess", customer.LastAccess);
+                command.Parameters.AddWithValue("@registerTime", customer.RegisterationDate);
+                command.Parameters.AddWithValue("@CSID", customer.CustomerStatus);
+                command.Parameters.AddWithValue("@CityID", customer.CityId);
+
+                try
+                {
+                    int rowsAffected = command.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        // Get the newly inserted customerID
+                        command.CommandText = "SELECT LAST_INSERT_ID()";
+                        object result = command.ExecuteScalar();
+                        return Convert.ToInt32(result);
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error creating customer.", ex);
+                }
+            }
+        }
+
+        public int CreateAd(CreateAdRequest ad)
+        {
+            string query = @"
+        INSERT INTO ad (title, description, price, createdAt, updatedAt, customerID, storeID, cityID, statusID, ACID)
+        VALUES (@title, @description, @price, @createdAt, @updatedAt, @customerID, @storeID, @cityID, @statusID, @ACID)";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@title", ad.Title);
+                command.Parameters.AddWithValue("@description", ad.Description);
+                command.Parameters.AddWithValue("@price", ad.Price);
+                command.Parameters.AddWithValue("@createdAt", ad.CreatedAt);
+                command.Parameters.AddWithValue("@updatedAt", ad.UpdatedAt);
+                command.Parameters.AddWithValue("@customerID", ad.CustomerId ?? "-1"); // Use null-coalescing operator to handle null values
+                command.Parameters.AddWithValue("@storeID", ad.StoreId ?? "-1");
+                command.Parameters.AddWithValue("@cityID", ad.CityId);
+                command.Parameters.AddWithValue("@statusID", ad.StatusId);
+                command.Parameters.AddWithValue("@ACID", ad.AdCategoryId);
+
+                try
+                {
+                    int rowsAffected = command.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        // Get the newly inserted adID
+                        command.CommandText = "SELECT LAST_INSERT_ID()";
+                        object result = command.ExecuteScalar();
+                        return Convert.ToInt32(result);
+                    }
+                    else
+                    {
+                        return 0;
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error creating ad.", ex);
+                }
+            }
         }
     }
 }

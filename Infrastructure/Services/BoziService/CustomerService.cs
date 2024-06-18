@@ -1,5 +1,6 @@
 ﻿using Infrastructure.DataAccess.MySql;
 using Infrastructure.DataAccess.Redis;
+using Infrastructure.Model;
 using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
@@ -36,5 +37,42 @@ namespace Infrastructure.Services.BoziService
                 MobileNumber = customer.MobileNumber
             };
         }
+
+        public void CreateCustomer(CreateCustomerRequest req)
+        {
+            try
+            {
+                _mySql.CustomerRepository.CreateCustomer(req);
+            } catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+
+        public void AdRegistration(CreateAdRequest req)
+        {
+            try
+            {
+                _mySql.CustomerRepository.CreateAd(req);
+            }
+            catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+
+        /* public List<Ad> GetAdByCustomerID(string customerId)
+         {
+             try
+             {
+                 var sqlAds = _mySql.AdRepository.GetAdRepositoriesByCustomerId(customerId);
+
+
+
+             } catch (BoziException ex)
+             {
+
+             }
+         }*/
     }
 }

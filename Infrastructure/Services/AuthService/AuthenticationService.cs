@@ -1,25 +1,16 @@
-﻿using Infrastructure.DataAccess;
-using Infrastructure.DataAccess.MySql;
+﻿using Infrastructure.DataAccess.MySql;
 using Infrastructure.DataAccess.Redis;
 using Infrastructure.Services.SmsService;
 using Infrastructure.Services.SmsService.Model;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Asn1;
 using SharedModel.Authentication;
+using SharedModel.Models;
 using SharedModel.System;
 using SixLaborsCaptcha.Core;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services.AuthService
 {
@@ -136,6 +127,11 @@ namespace Infrastructure.Services.AuthService
                 if (customer == null || string.IsNullOrEmpty(customer.CustomerID))
                 {
                     throw new BoziException(400, "کاربر یافت نشد");
+                }
+
+                if (customer.CSID == (int)CustomerStateEnum.Locked)
+                {
+                    throw new BoziException(401, "حساب شما مسدود شده");
                 }
 
                 var token = GenerateToken(customer.CustomerID);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharedModel.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace SharedModel.BoziService
 {
-    public interface IBoziService
+    public interface IAdService 
     {
-        ICustomerService CustomerService { get; }
-        ICityService CityService { get; }
+        public List<Ad> GetAdByCustomerId(string customerId);
     }
 }
