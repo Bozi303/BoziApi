@@ -13,7 +13,7 @@ namespace ClietnApi.Controllers.PresentationModel
         public List<string> CityIds { get; set; } = new();
         public List<string> ProvinceIds { get; set; } = new();
         public string? CategoryId { get; set; }
-        public int Page { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
+        public int Page { get; set; }
+        public int PageSize { get; set; }
     }
 }

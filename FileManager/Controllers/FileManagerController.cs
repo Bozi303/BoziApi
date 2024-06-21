@@ -31,19 +31,13 @@ namespace FileManager.Controllers
         }
 
         [HttpPost]
-        public ActionResult<object> AddFile(IFormFile file)
+        public ActionResult<object> AddFile(AddFileRequest file)
         {
             try
             {
-                byte[] fileData;
-                using (var ms = new MemoryStream())
-                {
-                    file.CopyTo(ms);
-                    fileData = ms.ToArray();
-                }
-
-                string fileName = Path.GetFileNameWithoutExtension(file.FileName);
-                string fileExtension = Path.GetExtension(file.FileName).TrimStart('.');
+                byte[] fileData = file.Data;
+                string fileName = Path.GetFileNameWithoutExtension(file.name);
+                string fileExtension = Path.GetExtension(file.extension).TrimStart('.');
 
                 string fileId = _fileManager.SaveFile(fileData, fileName, fileExtension);
 

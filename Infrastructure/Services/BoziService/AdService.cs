@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 namespace Infrastructure.Services.BoziService
 {
@@ -80,7 +81,7 @@ namespace Infrastructure.Services.BoziService
                     {
                         AdId = a.AdId.ToString(),
                         CreationDate = a.CreationDate,
-                        AdImage = "",//baseUrl + "/api/Image/view?title=" + a.title
+                        AdImage = string.IsNullOrEmpty(a.AdImage) ? "" : "https://localhost:7261/api/Image/View/" + a.AdImage,
                         Price = a.Price,
                         Title = a.Title
                     };

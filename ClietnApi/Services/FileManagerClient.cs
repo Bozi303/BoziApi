@@ -24,19 +24,27 @@ namespace ClietnApi.Services
         {
             try
             {
-                using (var content = new MultipartFormDataContent())
+                byte[] data;
+                using (var ms = new MemoryStream())
                 {
-                    content.Headers.ContentDisposition = ContentDispositionHeaderValue.Parse($"form-data; name=\"file\"; filename=\"{file.FileName}\"");
-
-                    using (var fileStream = file.OpenReadStream())
-                    {
-                        content.Add(new StreamContent(fileStream), "file", file.FileName);
-                    } 
-
-                    var response = await _httpClient.PostAsync<MultipartFormDataContent, FileManagerUploadResponse>(_uploadUrl, content);
-
-                    return response.FileId ?? throw new Exception("خطا در ذخیره فایل");
+                    file.CopyTo(ms);
+                    data = ms.ToArray();
                 }
+
+                string fileName = Path.GetFileNameWithoutExtension(file.FileName);
+                string fileExtension = Path.GetExtension(file.FileName).TrimStart('.');
+
+                var req = new FileManagerUploadRequest
+                {
+                    Data = data,
+                    Name = fileName,
+                    Extension = fileExtension
+                };
+                
+                var response = await _httpClient.PostAsync<FileManagerUploadRequest, FileManagerUploadResponse>(_uploadUrl, req);
+
+                return response.FileId ?? throw new Exception("خطا در ذخیره فایل");
+                
             }
             catch (Exception ex)
             {
@@ -48,7 +56,7 @@ namespace ClietnApi.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync<FileManagerDownloadResponse>(title);
+                var response = await _httpClient.GetAsync<FileManagerDownloadResponse>($"{_downloadUrl}?fileId={title}");
                 return response;
             } catch (Exception ex)
             {
