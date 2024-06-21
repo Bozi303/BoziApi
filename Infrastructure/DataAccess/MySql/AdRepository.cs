@@ -404,6 +404,77 @@ namespace Infrastructure.DataAccess.MySql
 
             return ad;
         }
+
+        public void IncrementAdViewCount(string adID)
+        {
+            string query = @"
+                UPDATE ad_views
+                SET viewCount = viewCount + 1
+                WHERE adID = @adID;
+
+                IF @@ROWCOUNT = 0
+                BEGIN
+                    INSERT INTO ad_views (adID, viewCount)
+                    VALUES (@adID, 1);
+                END
+            ";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@adID", adID);
+
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error incrementing ad view count.", ex);
+                }
+            }
+        }
+
+        public void RecordCustomerAdView(string customerID, string adID)
+        {
+            string query = @"
+                DECLARE @count INT;
+                SELECT @count = COUNT(*) FROM customer_view_ad WHERE customerID = @customerID;
+
+                IF @count >= 100
+                BEGIN
+                    -- Delete the oldest record
+                    WITH cte AS (
+                        SELECT ROW_NUMBER() OVER (ORDER BY customerID, adID) AS rn
+                        FROM customer_view_ad
+                        WHERE customerID = @customerID
+                    )
+                    DELETE FROM cte
+                    WHERE rn = (SELECT MIN(rn) FROM cte);
+                END
+
+                -- Insert the new record
+                INSERT INTO customer_view_ad (customerID, adID)
+                VALUES (@customerID, @adID)
+                ON DUPLICATE KEY UPDATE customerID = @customerID, adID = @adID;
+            ";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@customerID", customerID);
+                command.Parameters.AddWithValue("@adID", adID);
+
+                try
+                {
+                    command.ExecuteNonQuery();
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error recording customer ad view.", ex);
+                }
+            }
+        }
     }
 
 

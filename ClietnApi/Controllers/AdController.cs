@@ -13,6 +13,8 @@ namespace ClietnApi.Controllers
     {
         private readonly IBoziService _boziService;
 
+        private string customerId = "1";
+
         public AdController(IBoziService boziService)
         {
             _boziService = boziService;
@@ -79,7 +81,7 @@ namespace ClietnApi.Controllers
         {
             try
             {
-                var ad = _boziService.AdService.GetAdById(adId);
+                var ad = _boziService.AdService.GetAdById(adId, customerId);
                 return ad;
             } catch (BoziException ex)
             {

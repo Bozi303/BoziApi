@@ -12,6 +12,6 @@ namespace SharedModel.BoziService
         public List<string> GetMetaKeysByCategoryId(string categoryId);
         public List<AdCategory> GetAdCategories(string parentId);
         public List<AdPreview> GetAdsPreview(GetAdPreview getAdPreview);
-        public Ad GetAdById(string adId);
+        public Ad GetAdById(string adId, string viewerId);
     }
 }

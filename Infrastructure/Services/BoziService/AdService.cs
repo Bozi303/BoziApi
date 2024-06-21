@@ -92,11 +92,16 @@ namespace Infrastructure.Services.BoziService
             }
         }
 
-        public Ad GetAdById(string adId)
+        public Ad GetAdById(string adId, string viewerId)
         {
             try
             {
                 var ad = _mySqlDb.AdRepository.GetAdById(adId);
+
+                _mySqlDb.AdRepository.IncrementAdViewCount(adId);
+
+                _mySqlDb.AdRepository.RecordCustomerAdView(adId, viewerId);
+
                 return ad;
 
             } catch (Exception ex)

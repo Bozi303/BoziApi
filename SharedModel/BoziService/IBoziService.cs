@@ -11,5 +11,6 @@ namespace SharedModel.BoziService
         ICustomerService CustomerService { get; }
         ICityService CityService { get; }
         IAdService AdService { get; }
+        IReportService ReportService { get; }
     }
 }
