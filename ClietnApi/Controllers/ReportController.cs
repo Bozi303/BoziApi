@@ -57,7 +57,7 @@ namespace ClietnApi.Controllers
                 {
                     AdId = req.AdId,
                     Arcid = req.CategoryId,
-                    Arsid = req.StatusId,
+                    Arsid = ((int)ReportStatusEnum.NotSeen).ToString(),
                     CustomerId = customerId,
                     Description = req.Description
                 };
