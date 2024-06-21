@@ -53,9 +53,35 @@ namespace Infrastructure.Services.BoziService
         {
             try
             {
-                _mySql.CustomerRepository.CreateAd(req);
+                var adID = _mySql.AdRepository.CreateAd(req);
+
+                foreach (var meta in req.MetaDatas)
+                {
+                    _mySql.AdRepository.CreateAdMeta(adID, meta.Key, meta.Value);
+                }
+
+                _mySql.AdRepository.CreateAdView(adID, 0);
+
+                foreach (var pictureId in req.PicutresIds)
+                {
+                    _mySql.AdRepository.CreateAdPicture(adID, pictureId);
+                }
+               
             }
             catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+
+
+        public void UpdateCustomerProfile(EditCustomerProfile customerProfile)
+        {
+            try
+            {
+                //TODO
+                throw new NotImplementedException();
+            } catch (Exception ex)
             {
                 throw new BoziException(400, ex.Message);
             }

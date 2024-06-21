@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace SharedModel.Models
 {
-    public class AdCategory
+    public class AdPreview
     {
-        public string? ACID { get; set; }
+        public string? AdId { get; set; }
         public string? Title { get; set; }
+        public DateTime CreationDate { get; set; }
+        public decimal Price { get; set; }
+        public string? AdImage { get; set; }
     }
 }

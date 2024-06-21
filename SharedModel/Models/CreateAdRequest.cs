@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,7 @@ namespace SharedModel.Models
         public int StatusId { get; set; }
         public string? AdCategoryId { get; set; }
         public string? CityId { get; set; }
-
+        public List<KeyValue> MetaDatas { get; set; } = new();
+        public List<string> PicutresIds { get; set; } = new();
     }
 }

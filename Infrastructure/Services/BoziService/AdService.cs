@@ -27,9 +27,80 @@ namespace Infrastructure.Services.BoziService
                 var mySqlAd = _mySqlDb.AdRepository.GetAdRepositoriesByCustomerId(customerId);
                 //return ad;
                 throw new NotImplementedException();
-            } catch (BoziException ex)
+            }
+            catch (BoziException ex)
             {
                 throw ex;
+            }
+        }
+
+        public List<string> GetMetaKeysByCategoryId(string categoryId)
+        {
+            try
+            {
+                var keys = _mySqlDb.AdRepository.GetMetaKeysByCategoryId(categoryId);
+                return keys;
+            }
+            catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+
+        public List<AdCategory> GetAdCategories(string parentId)
+        {
+            try
+            {
+                var categories = _mySqlDb.AdRepository.GetCategoriesByParentId(parentId);
+
+                return categories.Select(s =>
+                {
+                    return new AdCategory
+                    {
+                        ACID = s.ACID.ToString(),
+                        Title = s.Title
+                    };
+                }).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+
+        public List<AdPreview> GetAdsPreview(GetAdPreview getAdPreview)
+        {
+            try
+            {
+                var preview = _mySqlDb.AdRepository.GetAdPreviews(getAdPreview);
+                return preview.Select(a =>
+                {
+                    return new AdPreview
+                    {
+                        AdId = a.AdId.ToString(),
+                        CreationDate = a.CreationDate,
+                        AdImage = "",//baseUrl + "/api/Image/view?title=" + a.title
+                        Price = a.Price,
+                        Title = a.Title
+                    };
+                }).ToList();
+            } catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+
+        public Ad GetAdById(string adId)
+        {
+            try
+            {
+                var ad = _mySqlDb.AdRepository.GetAdById(adId);
+                return ad;
+
+            } catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
             }
         }
     }

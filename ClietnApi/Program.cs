@@ -1,3 +1,4 @@
+using ClietnApi.Services;
 using Infrastructure.DataAccess.MySql;
 using Infrastructure.DataAccess.Redis;
 using Infrastructure.Services.AuthService;
@@ -17,6 +18,8 @@ var builder = WebApplication.CreateBuilder(args);
 //Jwt configuration starts here
 var jwtIssuer = builder.Configuration.GetSection("Jwt:Issuer").Get<string>();
 var jwtKey = builder.Configuration.GetSection("Jwt:Key").Get<string>();
+
+var fileManager = new FileManagerClient("https://localhost:7182", "/api/filemanager/addFile", "/api/filemanager/getFile");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
  .AddJwtBearer(options =>
@@ -44,6 +47,7 @@ ConfigureRedis();
 ConfigureSms();
 
 builder.Services.AddScoped<AuthenticationService>();
+builder.Services.AddSingleton(fileManager);
 builder.Services.AddSingleton<IBoziService, BoziService>();
 
 builder.Services.AddSixLabCaptcha(x =>

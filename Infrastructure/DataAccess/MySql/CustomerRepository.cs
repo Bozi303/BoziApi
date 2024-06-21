@@ -143,44 +143,34 @@ namespace Infrastructure.DataAccess.MySql
             }
         }
 
-        public int CreateAd(CreateAdRequest ad)
+ 
+        public void UpdateCustomerProfile(EditCustomerProfile profile)
         {
             string query = @"
-        INSERT INTO ad (title, description, price, createdAt, updatedAt, customerID, storeID, cityID, statusID, ACID)
-        VALUES (@title, @description, @price, @createdAt, @updatedAt, @customerID, @storeID, @cityID, @statusID, @ACID)";
+        UPDATE customer
+        SET firstname = @firstName,
+            lastname = @lastName,
+            email = @email,
+            CityID = @cityId
+        WHERE customerID = @customerId
+    ";
 
             using (MySqlCommand command = new MySqlCommand(query, _connection))
             {
-                command.Parameters.AddWithValue("@title", ad.Title);
-                command.Parameters.AddWithValue("@description", ad.Description);
-                command.Parameters.AddWithValue("@price", ad.Price);
-                command.Parameters.AddWithValue("@createdAt", ad.CreatedAt);
-                command.Parameters.AddWithValue("@updatedAt", ad.UpdatedAt);
-                command.Parameters.AddWithValue("@customerID", ad.CustomerId ?? "-1"); // Use null-coalescing operator to handle null values
-                command.Parameters.AddWithValue("@storeID", ad.StoreId ?? "-1");
-                command.Parameters.AddWithValue("@cityID", ad.CityId);
-                command.Parameters.AddWithValue("@statusID", ad.StatusId);
-                command.Parameters.AddWithValue("@ACID", ad.AdCategoryId);
+                command.Parameters.AddWithValue("@firstName", profile.FirstName);
+                command.Parameters.AddWithValue("@lastName", profile.LastName);
+                command.Parameters.AddWithValue("@email", profile.Email);
+                command.Parameters.AddWithValue("@cityId", profile.CityId);
+                command.Parameters.AddWithValue("@customerId", profile.CustomerId);
 
                 try
                 {
-                    int rowsAffected = command.ExecuteNonQuery();
-                    if (rowsAffected > 0)
-                    {
-                        // Get the newly inserted adID
-                        command.CommandText = "SELECT LAST_INSERT_ID()";
-                        object result = command.ExecuteScalar();
-                        return Convert.ToInt32(result);
-                    }
-                    else
-                    {
-                        return 0;
-                    }
+                    command.ExecuteNonQuery();
                 }
                 catch (MySqlException ex)
                 {
                     // Handle database-related exceptions here
-                    throw new Exception("Error creating ad.", ex);
+                    throw new Exception("Error updating customer profile.", ex);
                 }
             }
         }

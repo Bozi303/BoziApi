@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Formatters;
+using SharedModel.Models;
 
 namespace ClietnApi.Controllers.PresentationModel
 {
@@ -9,5 +10,8 @@ namespace ClietnApi.Controllers.PresentationModel
         public decimal Price { get; set; }
         public string? AdCategoryId { get; set; }
         public string? CityId { get; set; }
+        public List<KeyValue> MetaDatas { get; set; } = new();
+        public List<IFormFile> Pictures { get; set; } = new();
+
     }
 }

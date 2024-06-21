@@ -13,16 +13,17 @@ namespace Infrastructure.Services.BoziService
     {
         private readonly ICustomerService _customerService;
         private readonly ICityService _cityService;
+        private readonly IAdService _adService;
 
         public BoziService(RedisDataContext redisDb, MySqlDataContext mySqlDb)
         {
             _customerService = new CustomerService(redisDb, mySqlDb);
             _cityService = new CityService(mySqlDb);
+            _adService = new AdService(mySqlDb);
         }
-
 
         public ICustomerService CustomerService => _customerService;
         public ICityService CityService => _cityService;
-
+        public IAdService AdService => _adService;
     }
 }

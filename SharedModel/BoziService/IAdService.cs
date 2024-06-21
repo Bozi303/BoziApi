@@ -9,6 +9,9 @@ namespace SharedModel.BoziService
 {
     public interface IAdService 
     {
-        public List<Ad> GetAdByCustomerId(string customerId);
+        public List<string> GetMetaKeysByCategoryId(string categoryId);
+        public List<AdCategory> GetAdCategories(string parentId);
+        public List<AdPreview> GetAdsPreview(GetAdPreview getAdPreview);
+        public Ad GetAdById(string adId);
     }
 }

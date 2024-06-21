@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SharedModel.Models
 {
-    public class AdCategory
+    public class KeyValue
     {
-        public string? ACID { get; set; }
-        public string? Title { get; set; }
+        public string? Key { get; set; }
+        public string? Value { get; set; }
     }
 }

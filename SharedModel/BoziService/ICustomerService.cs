@@ -11,6 +11,7 @@ namespace SharedModel.BoziService
     public interface ICustomerService
     {
         CustomerProfile GetCustomerProfile(string customerId);
+        void UpdateCustomerProfile(EditCustomerProfile customerProfile);
         void AdRegistration(CreateAdRequest req);
         void CreateCustomer(CreateCustomerRequest req);
     }
