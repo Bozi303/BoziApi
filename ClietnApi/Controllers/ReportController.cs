@@ -9,14 +9,14 @@ namespace ClietnApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public class ReportService : ControllerBase
+    public class ReportController : ControllerBase
     {
         
         private readonly IBoziService _boziSerivce;
 
         private readonly string customerId = "1";
 
-        public ReportService(IBoziService boziService)
+        public ReportController(IBoziService boziService)
         {
             _boziSerivce = boziService;
         }
