@@ -15,6 +15,7 @@ namespace Infrastructure.Services.BoziService
         private readonly ICityService _cityService;
         private readonly IAdService _adService;
         private readonly IReportService _reportService;
+        private readonly IStoreService _storeService;
 
         public BoziService(RedisDataContext redisDb, MySqlDataContext mySqlDb)
         {
@@ -22,11 +23,13 @@ namespace Infrastructure.Services.BoziService
             _cityService = new CityService(mySqlDb);
             _adService = new AdService(mySqlDb);
             _reportService = new ReportService(mySqlDb);
+            _storeService = new StoreService(mySqlDb);
         }
 
         public ICustomerService CustomerService => _customerService;
         public ICityService CityService => _cityService;
         public IAdService AdService => _adService;
         public IReportService ReportService => _reportService;
+        public IStoreService StoreService => _storeService;
     }
 }

@@ -12,6 +12,10 @@ namespace ClietnApi.Controllers.PresentationModel
         public string? CityId { get; set; }
         public List<KeyValue> MetaDatas { get; set; } = new();
         public List<IFormFile> Pictures { get; set; } = new();
+    }
 
+    public class StoreAdRegistrationRequest : AdRegistrationRequest
+    {
+        public string? StoreId { get; set; }
     }
 }

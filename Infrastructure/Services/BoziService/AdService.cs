@@ -100,7 +100,7 @@ namespace Infrastructure.Services.BoziService
 
                 _mySqlDb.AdRepository.IncrementAdViewCount(adId);
 
-                _mySqlDb.AdRepository.RecordCustomerAdView(adId, viewerId);
+                _mySqlDb.AdRepository.RecordCustomerAdView(viewerId, adId);
 
                 return ad;
 

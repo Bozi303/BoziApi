@@ -348,7 +348,7 @@ namespace Infrastructure.DataAccess.MySql
                     WHERE am.adID = @adId;
 
                     SELECT 
-                        ap.pictureURL AS PictureURL
+                        ap.pictureURL AS PictureId
                     FROM ad_pictures ap
                     WHERE ap.adID = @adId;
                 ";
@@ -396,7 +396,7 @@ namespace Infrastructure.DataAccess.MySql
                     reader.NextResult();
                     while (reader.Read())
                     {
-                        ad.Images.Add(reader.GetString("PictureURL"));
+                        ad.Images.Add("https://localhost:7261/api/Image/View/" + reader.GetString("PictureId"));
                     }
                 }
 
@@ -411,12 +411,6 @@ namespace Infrastructure.DataAccess.MySql
                 UPDATE ad_views
                 SET viewCount = viewCount + 1
                 WHERE adID = @adID;
-
-                IF @@ROWCOUNT = 0
-                BEGIN
-                    INSERT INTO ad_views (adID, viewCount)
-                    VALUES (@adID, 1);
-                END
             ";
 
             using (MySqlCommand command = new MySqlCommand(query, _connection))
@@ -438,22 +432,6 @@ namespace Infrastructure.DataAccess.MySql
         public void RecordCustomerAdView(string customerID, string adID)
         {
             string query = @"
-                DECLARE @count INT;
-                SELECT @count = COUNT(*) FROM customer_view_ad WHERE customerID = @customerID;
-
-                IF @count >= 100
-                BEGIN
-                    -- Delete the oldest record
-                    WITH cte AS (
-                        SELECT ROW_NUMBER() OVER (ORDER BY customerID, adID) AS rn
-                        FROM customer_view_ad
-                        WHERE customerID = @customerID
-                    )
-                    DELETE FROM cte
-                    WHERE rn = (SELECT MIN(rn) FROM cte);
-                END
-
-                -- Insert the new record
                 INSERT INTO customer_view_ad (customerID, adID)
                 VALUES (@customerID, @adID)
                 ON DUPLICATE KEY UPDATE customerID = @customerID, adID = @adID;
