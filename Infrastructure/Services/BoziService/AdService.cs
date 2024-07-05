@@ -1,4 +1,5 @@
 ﻿using Infrastructure.DataAccess.MySql;
+using Infrastructure.DataAccess.Redis;
 using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
@@ -15,10 +16,12 @@ namespace Infrastructure.Services.BoziService
     {
 
         private readonly MySqlDataContext _mySqlDb;
+        private readonly RedisDataContext _redisDb;
 
-        public AdService(MySqlDataContext mySqlDb)
+        public AdService(MySqlDataContext mySqlDb, RedisDataContext redisDb)
         {
             _mySqlDb = mySqlDb;
+            _redisDb = redisDb;
         }
 
         public List<Ad> GetAdByCustomerId(string customerId)
@@ -26,7 +29,6 @@ namespace Infrastructure.Services.BoziService
             try
             {
                 var mySqlAd = _mySqlDb.AdRepository.GetAdRepositoriesByCustomerId(customerId);
-                //return ad;
                 throw new NotImplementedException();
             }
             catch (BoziException ex)
@@ -52,9 +54,17 @@ namespace Infrastructure.Services.BoziService
         {
             try
             {
-                var categories = _mySqlDb.AdRepository.GetCategoriesByParentId(parentId);
+                var categoryRedis = _redisDb.GetData<List<AdCategory>>($"category_{parentId}");
 
-                return categories.Select(s =>
+                if (categoryRedis != null)
+                {
+                    return categoryRedis;
+                }
+
+                var sqlCategories = _mySqlDb.AdRepository.GetCategoriesByParentId(parentId);
+
+
+                var categories = sqlCategories.Select(s =>
                 {
                     return new AdCategory
                     {
@@ -62,6 +72,10 @@ namespace Infrastructure.Services.BoziService
                         Title = s.Title
                     };
                 }).ToList();
+
+                _redisDb.SetData($"category_{parentId}", categories, 86400);
+
+                return categories;
 
             }
             catch (Exception ex)

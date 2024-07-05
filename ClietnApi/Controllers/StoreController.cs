@@ -73,6 +73,22 @@ namespace ClietnApi.Controllers
         }
 
         [HttpPost]
+        public ActionResult<object> UploadAdImage([FromForm] UploadImage image)
+        {
+            try
+            {
+
+                var id = _fileManager.UploadFile(image.File).Result;
+
+                return new { Id = id };
+            }
+            catch (BoziException ex)
+            {
+                return StatusCode(ex.ErrorCode, ex.Message);
+            }
+        }
+
+        [HttpPost]
         public ActionResult AdRegistration([FromForm] StoreAdRegistrationRequest req)
         {
             try
@@ -82,7 +98,7 @@ namespace ClietnApi.Controllers
                 // check customer is store owner
 
 
-                var PictureIds = StoreFiles(req.Pictures);
+                //var PictureIds = StoreFiles(req.Pictures);
 
                 var ad = new CreateAdRequest
                 {
@@ -96,7 +112,7 @@ namespace ClietnApi.Controllers
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
                     StatusId = (int)AdStatusEnum.Pending,
-                    PicutresIds = PictureIds,
+                    PicutresIds = req.PictureIds,
                     MetaDatas = req.MetaDatas
                 };
 

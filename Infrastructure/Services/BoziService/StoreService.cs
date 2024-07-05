@@ -1,4 +1,5 @@
 ﻿using Infrastructure.DataAccess.MySql;
+using Infrastructure.DataAccess.Redis;
 using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
@@ -14,10 +15,12 @@ namespace Infrastructure.Services.BoziService
     {
 
         private readonly MySqlDataContext _mySqlDb;
+        private readonly RedisDataContext _redisDb;
 
-        public StoreService(MySqlDataContext mySqlDb)
+        public StoreService(MySqlDataContext mySqlDb, RedisDataContext redisDb)
         {
             _mySqlDb = mySqlDb;
+            _redisDb = redisDb;
         }
 
         public bool CheckCustomerIsStoreOwner(string customerId, string storeId)
@@ -36,9 +39,15 @@ namespace Infrastructure.Services.BoziService
         {
             try
             {
-                var categories = _mySqlDb.StoreRepository.GetStoreCategories();
+                var categoriesRedis = _redisDb.GetData<List<TitleId>>("store_categories");
+                if (categoriesRedis != null)
+                {
+                    return categoriesRedis;
+                }
 
-                return categories.Select(c =>
+                var sqlCategories = _mySqlDb.StoreRepository.GetStoreCategories();
+
+                var categories = sqlCategories.Select(c =>
                 {
                     return new TitleId
                     {
@@ -46,6 +55,10 @@ namespace Infrastructure.Services.BoziService
                         Title = c.Title
                     };
                 }).ToList();
+
+                _redisDb.SetData("store_categories", categories, 84600);
+
+                return categories;
             }
             catch (Exception ex)
             {

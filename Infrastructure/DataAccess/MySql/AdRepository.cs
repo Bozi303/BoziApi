@@ -206,7 +206,7 @@ namespace Infrastructure.DataAccess.MySql
                             var category = new MySqlAdCategory
                             {
                                 ACID = reader.GetInt32("ACID"),
-                                ParentId = reader.GetString("parentId"),
+                                ParentId = reader.GetInt32("parentId").ToString(),
                                 Title = reader.GetString("title"),
                                 IsLeaf = reader.GetBoolean("isLeaf")
                             };

@@ -20,10 +20,10 @@ namespace Infrastructure.Services.BoziService
         public BoziService(RedisDataContext redisDb, MySqlDataContext mySqlDb)
         {
             _customerService = new CustomerService(redisDb, mySqlDb);
-            _cityService = new CityService(mySqlDb);
-            _adService = new AdService(mySqlDb);
-            _reportService = new ReportService(mySqlDb);
-            _storeService = new StoreService(mySqlDb);
+            _cityService = new CityService(mySqlDb, redisDb);
+            _adService = new AdService(mySqlDb, redisDb);
+            _reportService = new ReportService(mySqlDb, redisDb);
+            _storeService = new StoreService(mySqlDb, redisDb);
         }
 
         public ICustomerService CustomerService => _customerService;

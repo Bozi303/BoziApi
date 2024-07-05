@@ -8,6 +8,7 @@ using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
 using SixLaborsCaptcha.Core;
+using System.ComponentModel.DataAnnotations;
 
 namespace ClietnApi.Controllers
 {

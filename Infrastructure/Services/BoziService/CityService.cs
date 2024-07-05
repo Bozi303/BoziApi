@@ -1,4 +1,5 @@
 ﻿using Infrastructure.DataAccess.MySql;
+using Infrastructure.DataAccess.Redis;
 using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
@@ -13,19 +14,29 @@ namespace Infrastructure.Services.BoziService
 {
     public class CityService : ICityService
     {
-        private MySqlDataContext _mySqlDb;
-        
-        public CityService(MySqlDataContext mySqlDb)
+        private readonly MySqlDataContext _mySqlDb;
+        private readonly RedisDataContext _redisDb;
+
+        public CityService(MySqlDataContext mySqlDb, RedisDataContext redisDataContext)
         {
             _mySqlDb = mySqlDb;
+            _redisDb = redisDataContext;
         }
 
         public List<City> GetCitiesByProvinceId(string provinceId)
         {
             try
             {
-                var city = _mySqlDb.CityRepository.GetCitiesByProvinceId(provinceId);
-                return city.Select(c =>
+                var cityRedis = _redisDb.GetData<List<City>>($"city_{provinceId}");
+
+                if (cityRedis != null)
+                {
+                    return cityRedis;
+                }
+
+                var sqlCity = _mySqlDb.CityRepository.GetCitiesByProvinceId(provinceId);
+
+                var city = sqlCity.Select(c =>
                 {
                     return new City
                     {
@@ -34,7 +45,11 @@ namespace Infrastructure.Services.BoziService
                     };
                 }).ToList();
 
-            } catch (Exception ex)
+                _redisDb.SetData($"city_{provinceId}", city, 86400);
+
+                return city;
+            }
+            catch (Exception ex)
             {
                 throw new BoziException(400, ex.Message);
             }
@@ -44,8 +59,16 @@ namespace Infrastructure.Services.BoziService
         {
             try
             {
-                var province = _mySqlDb.CityRepository.GetAllProvinces();
-                return province.Select(p =>
+                var provinceRedis = _redisDb.GetData<List<Province>>("province");
+                
+                if (provinceRedis != null)
+                {
+                    return provinceRedis;
+                } 
+
+                var sqlProvince = _mySqlDb.CityRepository.GetAllProvinces();
+
+                var province = sqlProvince.Select(p =>
                 {
                     return new Province
                     {
@@ -53,6 +76,10 @@ namespace Infrastructure.Services.BoziService
                         ProvinceName = p.ProvinceName
                     };
                 }).ToList();
+                
+                _redisDb.SetData("province", province, 86400);
+
+                return province;
             }
             catch (Exception ex)
             {

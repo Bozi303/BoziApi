@@ -1,4 +1,5 @@
 ﻿using Infrastructure.DataAccess.MySql;
+using Infrastructure.DataAccess.Redis;
 using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
@@ -15,10 +16,12 @@ namespace Infrastructure.Services.BoziService
     {
 
         private readonly MySqlDataContext _mySqlDb;
+        private readonly RedisDataContext _redisDb;
 
-        public ReportService(MySqlDataContext mySqlDb)
+        public ReportService(MySqlDataContext mySqlDb, RedisDataContext redisDb)
         {
             _mySqlDb = mySqlDb;
+            _redisDb = redisDb;
         }
 
         
@@ -26,7 +29,16 @@ namespace Infrastructure.Services.BoziService
         {
             try
             {
+                var categoriesRedis = _redisDb.GetData<List<TitleId>>("report_categories");
+                if (categoriesRedis != null)
+                {
+                    return categoriesRedis;
+                }
+
                 var categories = _mySqlDb.ReportRepository.GetAllAdReportCategories();
+
+                _redisDb.SetData("reoirt_categories", categories, 84600);
+                
                 return categories;
             }
             catch (Exception ex)
@@ -40,7 +52,16 @@ namespace Infrastructure.Services.BoziService
         {
             try
             {
+                var statusesRedis = _redisDb.GetData<List<TitleId>>("report_statuses");
+                if (statusesRedis != null)
+                {
+                    return statusesRedis;
+                }
+        
                 var statuses = _mySqlDb.ReportRepository.GetAllAdReportStatuses();
+
+                _redisDb.SetData("report_statuses", statuses, 84600);
+
                 return statuses;
             } catch (Exception ex)
             {
