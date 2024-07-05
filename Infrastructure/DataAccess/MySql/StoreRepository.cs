@@ -112,5 +112,127 @@ namespace Infrastructure.DataAccess.MySql
                 }
             }
         }
+
+        public void InsertSupportStoreStatus(string note, string supportID, string storeID, string statusID, DateTime createdAt)
+        {
+            string query = @"
+                INSERT INTO support_store_status (
+                    note, supportID, storeID, statusID, createdAt
+                ) VALUES (
+                    @note, @supportID, @storeID, @statusID, @createdAt
+                );
+            ";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@note", note);
+                command.Parameters.AddWithValue("@supportID", supportID);
+                command.Parameters.AddWithValue("@storeID", storeID);
+                command.Parameters.AddWithValue("@statusID", statusID);
+                command.Parameters.AddWithValue("@createdAt", createdAt);
+
+                try
+                {
+                    _connection.Open();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        Console.WriteLine("New support store status record inserted successfully.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to insert new support store status record.");
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error inserting new support store status record.", ex);
+                }
+                finally
+                {
+                    _connection.Close();
+                }
+            }
+        }
+
+        public void UpdateStoreStatus(string storeID, string newStatusID)
+        {
+            string query = @"
+                UPDATE store
+                SET statusID = @newStatusID
+                WHERE storeID = @storeID;
+            ";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@newStatusID", newStatusID);
+                command.Parameters.AddWithValue("@storeID", storeID);
+
+                try
+                {
+                    _connection.Open();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        Console.WriteLine($"Store status updated for store ID {storeID}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No store found with ID {storeID}.");
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception($"Error updating store status for store ID {storeID}.", ex);
+                }
+                finally
+                {
+                    _connection.Close();
+                }
+            }
+        }
+
+        public List<TitleId> GetStoreStatuses()
+        {
+            List<TitleId> storeStatuses = new List<TitleId>();
+
+            string query = @"
+                SELECT statusID, Title
+                FROM store_status;
+            ";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                try
+                {
+                    _connection.Open();
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            TitleId storeStatus = new TitleId
+                            {
+                                Id = reader.GetInt32("statusID"),
+                                Title = reader.GetString("Title")
+                            };
+                            storeStatuses.Add(storeStatus);
+                        }
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error retrieving store statuses.", ex);
+                }
+                finally
+                {
+                    _connection.Close();
+                }
+            }
+
+            return storeStatuses;
+        }
     }
 }

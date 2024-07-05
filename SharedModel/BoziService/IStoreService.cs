@@ -13,5 +13,7 @@ namespace SharedModel.BoziService
         string GetStoreRegistrationNumber();
         void RegistrationStore(CreateStore request);
         bool CheckCustomerIsStoreOwner(string customerId, string storeId);
+        List<TitleId> GetStoreStatuses();
+        void ChangeStoreStatus(ChangeStoreStatus changeStoreStatus, string adminId);
     }
 }

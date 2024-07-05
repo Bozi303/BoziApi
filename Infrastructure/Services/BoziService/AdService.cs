@@ -123,5 +123,29 @@ namespace Infrastructure.Services.BoziService
                 throw new BoziException(400, ex.Message);
             }
         }
+
+        public void ChangeAdStatus(ChangeAdStatus changeAdStatus, string adminId)
+        {
+            try
+            {
+                _mySqlDb.AdRepository.UpdateAdStatus(adminId, changeAdStatus.StatusId);
+                _mySqlDb.AdRepository.InsertSupportAdStatus(changeAdStatus.Note, adminId, changeAdStatus.AdId, changeAdStatus.StatusId);
+            } catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+
+        public List<TitleId> GetAdStatuses()
+        {
+            try
+            {
+                var statuses = _mySqlDb.AdRepository.GetAllStatus();
+                return statuses;
+            } catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
     }
 }

@@ -453,6 +453,114 @@ namespace Infrastructure.DataAccess.MySql
                 }
             }
         }
+
+        public List<TitleId> GetAllStatus()
+        {
+            List<TitleId> statusList = new List<TitleId>();
+
+            string query = "SELECT statusID, Title FROM status";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                try
+                {
+                    _connection.Open();
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            TitleId status = new TitleId
+                            {
+                                Id = reader.GetInt32("statusID"),
+                                Title = reader.GetString("Title")
+                            };
+                            statusList.Add(status);
+                        }
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error retrieving status records.", ex);
+                }
+                finally
+                {
+                    _connection.Close();
+                }
+            }
+
+            return statusList;
+        }
+
+        public void UpdateAdStatus(string adID, string newStatusID)
+        {
+            string query = @"
+                UPDATE ad
+                SET statusID = @newStatusID
+                WHERE adID = @adID;
+            ";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@newStatusID", newStatusID);
+                command.Parameters.AddWithValue("@adID", adID);
+
+                try
+                {
+                    _connection.Open();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        Console.WriteLine($"Ad status updated for ad ID {adID}.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No ad found with ID {adID}.");
+                    }
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception($"Error updating ad status for ad ID {adID}.", ex);
+                }
+                finally
+                {
+                    _connection.Close();
+                }
+            }
+        }
+
+        public void InsertSupportAdStatus(string note, string supportID, string adID, string statusID)
+        {
+            string query = @"
+                    INSERT INTO support_ad_status (
+                        note, supportID, adID, statusID, createdAt
+                    )
+                    VALUES (
+                        @note, @supportID, @adID, @statusID, @createdAt
+                    );
+                ";
+
+            using (MySqlCommand command = new MySqlCommand(query, _connection))
+            {
+                command.Parameters.AddWithValue("@note", note);
+                command.Parameters.AddWithValue("@supportID", supportID);
+                command.Parameters.AddWithValue("@adID", adID);
+                command.Parameters.AddWithValue("@statusID", statusID);
+                command.Parameters.AddWithValue("@createdAt", DateTime.Now);
+
+                try
+                {
+                    command.ExecuteNonQuery();
+                    Console.WriteLine("Support ad status inserted successfully.");
+                }
+                catch (MySqlException ex)
+                {
+                    // Handle database-related exceptions here
+                    throw new Exception("Error inserting support ad status.", ex);
+                }
+            }
+        }
     }
 
 

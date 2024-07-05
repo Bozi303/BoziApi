@@ -23,6 +23,19 @@ namespace Infrastructure.Services.BoziService
             _redisDb = redisDb;
         }
 
+        public void ChangeStoreStatus(ChangeStoreStatus changeStoreStatus, string adminId)
+        {
+            try
+            {
+                _mySqlDb.StoreRepository.UpdateStoreStatus(adminId, changeStoreStatus.StatusId);
+                _mySqlDb.StoreRepository.InsertSupportStoreStatus(changeStoreStatus.Note, adminId, changeStoreStatus.StoreId, changeStoreStatus.StatusId, DateTime.Now);
+            }
+            catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
+        }
+        
         public bool CheckCustomerIsStoreOwner(string customerId, string storeId)
         {
             try
@@ -72,6 +85,18 @@ namespace Infrastructure.Services.BoziService
 
             return random.NextInt64(100000000, 10000000000).ToString();
 
+        }
+
+        public List<TitleId> GetStoreStatuses()
+        {
+            try
+            {
+                var statuses = _mySqlDb.StoreRepository.GetStoreStatuses();
+                return statuses;
+            } catch (Exception ex)
+            {
+                throw new BoziException(400, ex.Message);
+            }
         }
 
         public void RegistrationStore(CreateStore request)

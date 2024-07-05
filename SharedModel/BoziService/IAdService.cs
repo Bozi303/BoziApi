@@ -13,5 +13,7 @@ namespace SharedModel.BoziService
         public List<AdCategory> GetAdCategories(string parentId);
         public List<AdPreview> GetAdsPreview(GetAdPreview getAdPreview);
         public Ad GetAdById(string adId, string viewerId);
+        public List<TitleId> GetAdStatuses();
+        public void ChangeAdStatus(ChangeAdStatus changeAdStatus, string adminId);
     }
 }
