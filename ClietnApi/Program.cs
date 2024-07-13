@@ -1,4 +1,5 @@
 using ClietnApi.Services;
+using Infrastructure.DataAccess.ElasticSearch;
 using Infrastructure.DataAccess.MySql;
 using Infrastructure.DataAccess.Redis;
 using Infrastructure.Services.AuthService;
@@ -46,6 +47,7 @@ ConfigureRedis();
 
 ConfigureSms();
 
+builder.Services.AddElasticSearch(builder.Configuration);
 builder.Services.AddScoped<AuthenticationService>();
 builder.Services.AddSingleton(fileManager);
 builder.Services.AddSingleton<IBoziService, BoziService>();
@@ -57,7 +59,6 @@ builder.Services.AddSixLabCaptcha(x =>
 });
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

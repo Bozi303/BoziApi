@@ -1,6 +1,8 @@
-﻿using Infrastructure.DataAccess.MySql;
+﻿using Infrastructure.DataAccess.ElasticSearch.ElasticSearchModel;
+using Infrastructure.DataAccess.MySql;
 using Infrastructure.DataAccess.Redis;
 using Infrastructure.Model;
+using Nest;
 using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
@@ -16,13 +18,15 @@ namespace Infrastructure.Services.BoziService
     public class CustomerService : ICustomerService
     {
 
+        private readonly IElasticClient _elastic;    
         private readonly RedisDataContext _redisDb;
         private readonly MySqlDataContext _mySql;
 
-        public CustomerService(RedisDataContext redis, MySqlDataContext mySql)
+        public CustomerService(RedisDataContext redis, MySqlDataContext mySql, IElasticClient elasticClient)
         {
             _redisDb = redis;
             _mySql = mySql;
+            _elastic = elasticClient;
         }
 
         public CustomerProfile GetCustomerProfile(string customerId)
@@ -66,7 +70,19 @@ namespace Infrastructure.Services.BoziService
                 {
                     _mySql.AdRepository.CreateAdPicture(adID, pictureId);
                 }
-               
+
+                // insert in elasticSearch
+
+                _elastic.IndexDocument(new ElasticAdPreviewModel
+                {
+                    AdId = adID.ToString(),
+                    AdImage = req.PicutresIds.FirstOrDefault(),
+                    CreationDate = DateTime.Now,
+                    Price = req.Price,
+                    Title = req.Title,
+                    CategoryId = req.AdCategoryId,
+                    CityId = req.CityId
+                });
             }
             catch (Exception ex)
             {

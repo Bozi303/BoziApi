@@ -1,5 +1,6 @@
 ﻿using Infrastructure.DataAccess.MySql;
 using Infrastructure.DataAccess.Redis;
+using Nest;
 using SharedModel.BoziService;
 using System;
 using System.Collections.Generic;
@@ -17,11 +18,11 @@ namespace Infrastructure.Services.BoziService
         private readonly IReportService _reportService;
         private readonly IStoreService _storeService;
 
-        public BoziService(RedisDataContext redisDb, MySqlDataContext mySqlDb)
+        public BoziService(RedisDataContext redisDb, MySqlDataContext mySqlDb, IElasticClient elasticClient)
         {
-            _customerService = new CustomerService(redisDb, mySqlDb);
+            _customerService = new CustomerService(redisDb, mySqlDb, elasticClient);
             _cityService = new CityService(mySqlDb, redisDb);
-            _adService = new AdService(mySqlDb, redisDb);
+            _adService = new AdService(mySqlDb, redisDb, elasticClient);
             _reportService = new ReportService(mySqlDb, redisDb);
             _storeService = new StoreService(mySqlDb, redisDb);
         }

@@ -1,5 +1,7 @@
-﻿using Infrastructure.DataAccess.MySql;
+﻿using Infrastructure.DataAccess.ElasticSearch.ElasticSearchModel;
+using Infrastructure.DataAccess.MySql;
 using Infrastructure.DataAccess.Redis;
+using Nest;
 using SharedModel.BoziService;
 using SharedModel.Models;
 using SharedModel.System;
@@ -17,11 +19,12 @@ namespace Infrastructure.Services.BoziService
 
         private readonly MySqlDataContext _mySqlDb;
         private readonly RedisDataContext _redisDb;
-
-        public AdService(MySqlDataContext mySqlDb, RedisDataContext redisDb)
+        private readonly IElasticClient _elastic;
+        public AdService(MySqlDataContext mySqlDb, RedisDataContext redisDb, IElasticClient elasticClient)
         {
             _mySqlDb = mySqlDb;
             _redisDb = redisDb;
+            _elastic = elasticClient;
         }
 
         public List<Ad> GetAdByCustomerId(string customerId)
@@ -88,8 +91,21 @@ namespace Infrastructure.Services.BoziService
         {
             try
             {
-                var preview = _mySqlDb.AdRepository.GetAdPreviews(getAdPreview);
-                return preview.Select(a =>
+                // first search in elastisearch
+                var search = getAdPreview.Search;
+                var cities = getAdPreview.CityIds;
+                var minPrice = getAdPreview.MinPrice;
+                var maxPrice = getAdPreview.MaxPrice;
+                var categoryId = getAdPreview.CategoryId;
+                
+                var preview = ElasticsearchFilter(search, cities, minPrice, maxPrice, categoryId);
+                if (preview.Any())
+                {
+                    return preview;
+                }
+
+                var sqlPreview = _mySqlDb.AdRepository.GetAdPreviews(getAdPreview);
+                return sqlPreview.Select(a =>
                 {
                     return new AdPreview
                     {
@@ -103,6 +119,75 @@ namespace Infrastructure.Services.BoziService
             } catch (Exception ex)
             {
                 throw new BoziException(400, ex.Message);
+            }
+        }
+
+        private List<AdPreview> ElasticsearchFilter(string search, List<string> cities, decimal minPrice, decimal maxPrice, string categoryId)
+        {
+            ISearchResponse<ElasticAdPreviewModel> searchResponse;
+
+            searchResponse = _elastic.Search<ElasticAdPreviewModel>(s => s
+                .Query(q => q
+                    .Match(m => m
+                        .Field(f => f.Title)
+                        .Query(search)
+                    )
+                )
+            );
+
+            if (cities.Count > 0)
+            {
+                searchResponse = _elastic.Search<ElasticAdPreviewModel>(s => s
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(
+                                m => m.Match(mm => mm.Field(f => f.Title).Query(search))
+                                )
+                            .Should(
+                            s => s.Terms(t => t.Field(f => f.CityId).Terms(cities))
+                            )
+                            .Filter(
+                            f => f.Range(r => r.Field(ff => ff.Price).GreaterThanOrEquals((double?)minPrice)),
+                            f => f.Range(r => r.Field(ff => ff.Price).LessThanOrEquals((double?)maxPrice))
+                            )
+                        )
+                    )
+                );
+            } else
+            {
+                searchResponse = _elastic.Search<ElasticAdPreviewModel>(s => s
+                    .Query(q => q
+                        .Bool(b => b
+                            .Must(
+                                m => m.Match(mm => mm.Field(f => f.Title).Query(search))
+                                )
+                                .Filter(
+                                    f => f.Range(r => r.Field(ff => ff.Price).GreaterThanOrEquals((double?)minPrice)),
+                                    f => f.Range(r => r.Field(ff => ff.Price).LessThanOrEquals((double?)maxPrice))
+                                )
+                            )
+                         )
+                );
+            }
+
+
+            if (searchResponse.Documents.Any())
+            {
+                var res = searchResponse.Documents.ToList();
+                return res.Select(s =>
+                {
+                    return new AdPreview
+                    {
+                        AdId = s.AdId,
+                        AdImage = s.AdImage,
+                        CreationDate = s.CreationDate,
+                        Price = s.Price,
+                        Title = s.Title
+                    };
+                }).ToList();
+            } else
+            {
+                return new();
             }
         }
 
